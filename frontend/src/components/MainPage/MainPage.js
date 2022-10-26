@@ -1,13 +1,16 @@
 import LoginForm from "./SessionForms/LoginForm";
 import SignupFormModal from "./SessionForms/SignupModal";
 import './MainPage.css';
+import CarouselUnit from "./Carousel";
 
 function MainPage() {
     return (
       <div id="body">
         <div id="left">
             <div id="intro">
-                <h1>allora</h1>
+                <div className="logo-wrapper">
+                    <img src={'https://hippark-photos.s3.amazonaws.com/allora-logos/allora-logo-pink_adobe_express.png'} alt=""></img>
+                </div>
                 <p>take a trip!</p>
             </div>
             <div id="break"></div>
@@ -16,6 +19,9 @@ function MainPage() {
             <SignupFormModal />
         </div>
         <div id="right"></div>
+        <div className="carousel-unit">
+          <CarouselUnit/>
+        </div>
       </div>
     );
   }
