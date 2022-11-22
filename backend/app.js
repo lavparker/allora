@@ -4,7 +4,9 @@ const logger = require('morgan');
 const debug = require('debug');
 const cors = require('cors');
 const csurf = require('csurf');
+ require('./db/connection'); 
 /* --- Need to import these to load the models into mongoose --- */
+
 require('./models/User');
 require('./models/Trip')
 /* ------------------------------------------------------------- */
@@ -49,9 +51,11 @@ app.use(
 // Attach Express routers
 const usersRouter = require('./routes/api/users');
 const csrfRouter = require('./routes/api/csrf');
+const memoriesRouter = require ('./routes/api/memories'); 
 app.use('/api/users', usersRouter);
 app.use('/api/csrf', csrfRouter);
 app.use('/api/trips', tripsRouter); 
+app.use('/api/memories', memoriesRouter); 
 // Serve static React build files statically in production
 if (isProduction) {
   const path = require('path');
