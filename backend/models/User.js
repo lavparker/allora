@@ -13,6 +13,9 @@ const userSchema = Schema({
   hashedPassword: {
     type: String,
     required: true
+  },
+  profileImage: {
+    type: String
   }
 }, {
   // tells mongoose to add and maintain `createdAt` and `updatedAt` fields with
