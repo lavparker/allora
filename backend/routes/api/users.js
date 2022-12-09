@@ -2,6 +2,8 @@ const express = require("express");
 const router = express.Router();
 const bcrypt = require('bcryptjs');
 const passport = require('passport');
+const multer = require('multer');
+const Aws = require('aws-sdk');
 const mongoose = require('mongoose');
 const User = mongoose.model('User');
 const { loginUser, restoreUser } = require('../../config/passport');
@@ -10,6 +12,20 @@ const validateRegisterInput = require('../../validation/register');
 const validateLoginInput = require('../../validation/login');
 
 const { isProduction } = require('../../config/keys');
+const { ExtractJwt } = require("passport-jwt");
+
+const storage = multer.memoryStorage({
+  destination: function (req, file, cb) {
+    cb(null, '')
+  }
+});
+
+const upload = multer({ storage: storage, fileFilter: filefilter });
+
+const s3 = new Aws.S3({
+  accessKeyId:process.env.AWS_ACCESS_KEY_ID,
+  secretAccessKey:process.env.AWS_ACCESS_KEY_SECRET
+})
 
 // Attach restoreUser as a middleware before the route handler to gain access
 // to req.user. (restoreUser will NOT return an error response if there is no
@@ -116,5 +132,7 @@ router.post('/login', validateLoginInput, async (req, res, next) => {
     return res.json(await loginUser(user));
   })(req, res, next);
 });
+
+
 
 module.exports = router;

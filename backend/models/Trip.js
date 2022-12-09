@@ -32,6 +32,9 @@ const tripSchema = Schema({
     },
     longitude: {
         type: String
+    },
+    tripHeaderImage: {
+        type: String
     }
 }, {
     timestamps: true
