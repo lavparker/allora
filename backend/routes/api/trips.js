@@ -1,11 +1,34 @@
 const express = require('express');
 const router = express.Router(); 
+const multer = require('multer');
+const Aws = require('aws-sdk');
 const mongoose = require('mongoose'); 
-const  User = mongoose.model('User'); 
+const User = mongoose.model('User'); 
 const Trip = mongoose.model('Trip'); 
 const Activity = mongoose.model('Activity'); 
 const { requireUser, restoreUser } = require('../../config/passport'); 
 const validateTripInput = require('../../validation/trips'); 
+
+const storage = multer.memoryStorage({
+    destination: function (req, file, cb) {
+        cb(null, '')
+    }
+})
+
+const filefilter = (req, file, cb) => {
+    if (file.mimetype === 'image/jpeg' || file.mimetype === 'image/jpg') {
+        cb(null, true)
+    } else {
+        cb(null, false)
+    }
+}
+
+const upload = multer({ storage: storage, fileFilter: filefilter });
+
+const s3 = new Aws.S3({
+    accessKeyId:process.env.AWS_ACCESS_KEY_ID,
+    secretAccessKey:process.env.AWS_ACCESS_KEY_SECRET
+});
 
 router.get('/', async(req, res) =>{
     try{
@@ -76,8 +99,44 @@ router.get('/:id', async(req, res, next) =>{
     }
 })
 
-router.post('/', requireUser, restoreUser, validateTripInput, async(req, res, next) =>{``
-    try{
+// router.post('/', requireUser, restoreUser, validateTripInput, async(req, res, next) =>{``
+//     try{
+//         const newTrip = new Trip({
+//             tripDates: req.body.tripDates,
+//             tripAttendees: req.body.tripAttendees,
+//             city: req.body.city,
+//             country: req.body.country,
+//             tripTitle: req.body.tripTitle,
+//             latitude: req.body.latitude,
+//             longitude: req.body.longitude,
+//             planner: req.user._id
+//         }); 
+//         let trip = await newTrip.save(); 
+//         trip = await trip.populate('planner', '_id, username')
+//         res.json(trip);
+//     }
+//     catch(err) {
+//         next(err);
+//     }
+// });
+
+router.post('/', upload.single('headerImage'), requireUser, restoreUser, validateTripInput, async(req, res, next) => {
+    try {
+        const params = {
+            Bucket: process.env.AWS_BUCKET_NAME,
+            Key:req.file.originalname,
+            Body:req.file.buffer,
+            ACL:"public-read-write",
+            ContentType:"image/jpeg"
+        };
+
+        s3.upload(params, (error, data) => {
+            if (error) {
+                res.status(500).send({"err": error})
+            }
+        });
+
+    try {
         const newTrip = new Trip({
             tripDates: req.body.tripDates,
             tripAttendees: req.body.tripAttendees,
@@ -86,7 +145,8 @@ router.post('/', requireUser, restoreUser, validateTripInput, async(req, res, ne
             tripTitle: req.body.tripTitle,
             latitude: req.body.latitude,
             longitude: req.body.longitude,
-            planner: req.user._id
+            planner: req.user._id,
+            headerImage: data.Location
         }); 
         let trip = await newTrip.save(); 
         trip = await trip.populate('planner', '_id, username')

@@ -33,7 +33,7 @@ const tripSchema = Schema({
     longitude: {
         type: String
     },
-    tripHeaderImage: {
+    headerImage: {
         type: String
     }
 }, {
